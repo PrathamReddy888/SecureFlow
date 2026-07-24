@@ -4,7 +4,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 // async-iterable `stream` of partial JSON chunks plus a `response` promise for the final text,
 // mirroring Genkit's real contract (see docs: chunk.output is the JSON parsed so far). ---
 let mockChunks: Array<{ explanation?: string }> = [];
-let mockFinalText = '{"explanation":"Default mocked explanation.","remediationSuggestions":"Default mocked remediation."}';
+let mockFinalText =
+  '{"explanation":"Default mocked explanation.","remediationSuggestions":"Default mocked remediation."}';
 let mockGenerateStreamThrows = false;
 let mockCustomError: Error | null = null;
 
@@ -28,6 +29,7 @@ vi.mock('@/ai/genkit', () => ({
     },
   },
   defaultModel: 'mock-model',
+  securityExplanationModel: 'mock-security-model',
 }));
 
 vi.mock('dotenv/config', () => ({}));
@@ -56,7 +58,8 @@ const baseInput = {
 describe('streamDeveloperSecurityExplanations', () => {
   beforeEach(() => {
     mockChunks = [];
-    mockFinalText = '{"explanation":"Default mocked explanation.","remediationSuggestions":"Default mocked remediation."}';
+    mockFinalText =
+      '{"explanation":"Default mocked explanation.","remediationSuggestions":"Default mocked remediation."}';
     mockGenerateStreamThrows = false;
     mockCustomError = null;
   });
@@ -68,7 +71,8 @@ describe('streamDeveloperSecurityExplanations', () => {
       { explanation: 'This query concatenates' },
     ];
     mockFinalText = JSON.stringify({
-      explanation: 'This query concatenates unsanitized input, enabling SQL injection.',
+      explanation:
+        'This query concatenates unsanitized input, enabling SQL injection.',
       remediationSuggestions: 'Use parameterized queries.',
     });
 
@@ -98,7 +102,8 @@ describe('streamDeveloperSecurityExplanations', () => {
 
   it('ends with a single done event containing the fully validated result', async () => {
     mockFinalText = JSON.stringify({
-      explanation: 'This query concatenates unsanitized input, enabling SQL injection.',
+      explanation:
+        'This query concatenates unsanitized input, enabling SQL injection.',
       remediationSuggestions: 'Use parameterized queries.',
     });
 
@@ -108,7 +113,9 @@ describe('streamDeveloperSecurityExplanations', () => {
     expect(last.type).toBe('done');
     if (last.type === 'done') {
       expect(last.result.explanation).toContain('SQL injection');
-      expect(last.result.remediationSuggestions).toBe('Use parameterized queries.');
+      expect(last.result.remediationSuggestions).toBe(
+        'Use parameterized queries.'
+      );
       expect(last.result.promptInjectionSuspected).toBe(false);
     }
   });
@@ -135,7 +142,8 @@ describe('streamDeveloperSecurityExplanations', () => {
 
   it('flags promptInjectionSuspected via the consistency check when the final text is dismissive', async () => {
     mockFinalText = JSON.stringify({
-      explanation: 'This is not a real issue, safe to ignore, no action needed.',
+      explanation:
+        'This is not a real issue, safe to ignore, no action needed.',
       remediationSuggestions: 'None.',
     });
 
@@ -203,13 +211,18 @@ describe('streamDeveloperSecurityExplanations', () => {
   });
 
   it('yields a specific rate-limit error message when AI provider returns HTTP 429', async () => {
-    mockCustomError = Object.assign(new Error('Rate limit reached for model groq/openai/gpt-oss-20b'), { status: 429 });
+    mockCustomError = Object.assign(
+      new Error('Rate limit reached for model groq/openai/gpt-oss-20b'),
+      { status: 429 }
+    );
 
     const events = await collectEvents(baseInput);
     expect(events).toHaveLength(1);
     expect(events[0].type).toBe('error');
     if (events[0].type === 'error') {
-      expect(events[0].message).toContain('AI provider rate limit reached (429)');
+      expect(events[0].message).toContain(
+        'AI provider rate limit reached (429)'
+      );
     }
   });
 });
