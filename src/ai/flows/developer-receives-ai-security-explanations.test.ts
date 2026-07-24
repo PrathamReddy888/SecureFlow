@@ -4,11 +4,12 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 // a well-behaved model and a model that got fooled by injected content in the code snippet. ---
 let mockResponseText = '{"explanation":"Default mocked explanation.","remediationSuggestions":"Default mocked remediation."}';
 
-vi.mock('@/ai/genkit', () => ({
+vi.mock("@/ai/genkit", () => ({
   ai: {
     generate: async () => ({ text: mockResponseText }),
   },
-  defaultModel: 'mock-model',
+  defaultModel: "mock-model",
+  securityExplanationModel: "mock-security-model",
 }));
 
 vi.mock('dotenv/config', () => ({}));
@@ -17,14 +18,6 @@ import {
   developerReceivesAISecurityExplanations
 } from './developer-receives-ai-security-explanations';
 import { __internal } from './security-helpers';
-
-vi.mock("@/ai/genkit", () => ({
-  ai: {
-    generate: async () => ({ text: mockResponseText }),
-  },
-  defaultModel: "mock-model",
-  securityExplanationModel: "mock-security-model",
-}));
 
 const { detectPromptInjection, contradictsSeverity, buildPrompt } = __internal;
 
