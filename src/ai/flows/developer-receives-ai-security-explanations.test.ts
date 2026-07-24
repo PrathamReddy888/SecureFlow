@@ -18,6 +18,14 @@ import {
 } from './developer-receives-ai-security-explanations';
 import { __internal } from './security-helpers';
 
+vi.mock("@/ai/genkit", () => ({
+  ai: {
+    generate: async () => ({ text: mockResponseText }),
+  },
+  defaultModel: "mock-model",
+  securityExplanationModel: "mock-security-model",
+}));
+
 const { detectPromptInjection, contradictsSeverity, buildPrompt } = __internal;
 
 // A representative sample of injection-style payloads, adapted to code-comment form, similar to
