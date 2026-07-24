@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { __internal } from './security-helpers';
-import { ai, defaultModel } from '@/ai/genkit';
+import { ai, securityExplanationModel } from '@/ai/genkit';
 import {
   AISecurityExplanationInputSchema,
   AISecurityExplanationOutputSchema,
@@ -55,7 +55,7 @@ export async function* streamDeveloperSecurityExplanations(
 
   try {
     const { stream, response } = ai.generateStream({
-      model: defaultModel,
+      model: securityExplanationModel,
       system: SYSTEM_PROMPT,
       prompt,
       output: { format: 'json', schema: StreamChunkSchema },
